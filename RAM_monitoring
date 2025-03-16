@@ -1,0 +1,68 @@
+-RAM Monitoring Script
+
+1.Project Name:-RAM Monitoring and Alert Script
+
+2.Project Description:-This project is a simple Bash script designed to monitor the available RAM on a Linux system. 
+If the available RAM falls below a defined threshold, the script will display a warning message. 
+The script is automated using a cron job to run every day at 6:00 PM.
+
+3.Features:-
+
+-Real-time RAM monitoring
+
+-Threshold-based alerting
+
+-Automated execution via cron job
+
+-Lightweight and efficient
+
+-Logs output for tracking performance
+
+4.Script Code:-
+
+#!/bin/bash
+
+# Fetch available free RAM in MB
+Free_space=$(free -mt | grep "Total" | awk '{print $4}')
+
+# Set threshold value in MB
+TH=2500
+
+# Check if free RAM is below threshold
+if [ "$Free_space" -lt "$TH" ]; then
+    echo "Warning, RAM is running low "
+else
+    echo "RAM is sufficient - $Free_space MB"
+fi
+
+5.Code Explanation:-
+
+-free -mt | grep "Total" | awk '{print $4}': Retrieves the total available free RAM in MB.
+
+-TH=2500: Sets a threshold of 2500 MB.
+
+-if [ "$Free_space" -lt "$TH" ]; then: Compares the available RAM against the threshold.
+
+-echo "Warning, RAM is running low": Prints a warning message if RAM is low.
+
+-echo "RAM is sufficient - $Free_space MB": Displays available RAM if it's above the threshold.
+
+6.Setting Up Cron Job:To automate script execution every day at 6:00 PM, add the following line to your crontab:
+
+-0 18 * * * /path/to/ram_monitoring.sh >> /path/to/ram_monitoring.log 2>&1
+
+7.Explanation:-
+
+-0 18 * * * → Runs at 6:00 PM daily.
+
+-/path/to/ram_monitoring.sh → Replace with the actual script path.
+
+->> /path/to/ram_monitoring.log 2>&1 → Logs output and errors.
+
+8.Usage:-
+Save the script as ram_monitoring.sh.
+-Give execute permission:chmod +x ram_monitoring.sh
+-Add to crontab:crontab -e
+-Monitor logs:cat /path/to/ram_monitoring.log
+
+#This project provides an efficient and simple way to monitor system memory usage and prevent potential performance issues.
