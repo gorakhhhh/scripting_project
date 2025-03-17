@@ -1,0 +1,103 @@
+                                                              Disk Monitoring and Alert System
+#Project Overview
+
+This project monitors disk usage on a Linux system, specifically checking the /boot partition.
+If the usage exceeds 10%, the system automatically sends an email alert using Postfix. Additionally,
+a cron job is scheduled to execute the script daily at 6 PM to ensure continuous monitoring.
+
+Step 1: Disk Monitoring Script:
+#!/bin/bash
+
+Fu=$(df -h | egrep -v "filesystem|tmpfs" | grep "/boot" | awk '{print $5}' | tr -d %)
+TO=gmalusare100@gmail.com
+
+if [ "$Fu" -gt 10 ]; then
+    echo "Warning, Disk space is running low - $Fu%" | mail -s "DISK SPACE ALERT!" $TO
+else
+    echo "ALL GOOD"
+fi
+
+#Explanation:
+
+-df -h → Retrieves disk usage in a human-readable format.
+
+-grep "/boot" → Filters the line related to the /boot partition.
+
+-awk '{print $5}' → Extracts the percentage of disk usage.
+
+-tr -d % → Removes the percentage symbol for numeric comparison.
+
+-If disk usage exceeds 10%, an email is sent via Postfix.
+
+Step 2: Install and Configure Postfix:-
+1. Install Postfix and Mail Utilities
+For Debian/Ubuntu:
+-sudo yum install postfix mailutils -y
+
+2. Configure Postfix:-
+-sudo vi /etc/postfix/main.cf
+
+#Modify or add the following lines:
+myhostname = example.com
+mydomain = example.com
+myorigin = /etc/mailname
+relayhost = [smtp.gmail.com]:587
+smtp_use_tls = yes
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options = noanonymous
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+
+3. Configure Gmail SMTP Authentication (If Using Gmail):
+-Create a password file:
+sudo nano /etc/postfix/sasl_passwd
+
+-Add the following:
+[smtp.gmail.com]:587 your_email@gmail.com:your_app_password
+
+-Secure the file and apply changes:
+sudo chmod 600 /etc/postfix/sasl_passwd
+sudo postmap /etc/postfix/sasl_passwd
+
+4. Restart and Enable Postfix:
+sudo systemctl restart postfix
+sudo systemctl enable postfix
+
+-Test Postfix Email Sending:
+echo "This is a test email from Postfix" | mail -s "Test Email" gmalusare100@gmail.com
+
+Step 3: Schedule the Script Using Cron
+
+1. Open the Crontab File:-
+crontab -e
+
+2. Add a New Cron Job
+Add the following line at the bottom of the file:
+0 18 * * * /home/myscript/disk_monitoring
+-Cron Job Breakdown:
+┌──────── Minute (0 - 59)
+│ ┌────── Hour (0 - 23)
+│ │ ┌──── Day of the Month (1 - 31)
+│ │ │ ┌── Month (1 - 12)
+│ │ │ │ ┌─ Day of the Week (0 - 6) [0 = Sunday]
+│ │ │ │ │
+0 18 * * * /home/myscript/disk_monitoring
+
+3. Ensure Script is Executable:-
+chmod +x /home/myscript/disk_monitoring
+
+4. Verify Cron Job:-
+crontab -l
+
+
+Conclusion:-
+
+1.The disk monitoring script checks the /boot partition and sends an email alert if disk space usage exceeds 10%.
+
+2.Postfix is configured to send emails via SMTP (Gmail or another mail server).
+
+3.A cron job ensures the script runs daily at 6 PM, automating the monitoring process.
+
+
+
+
